@@ -34,7 +34,7 @@ module.exports = {
                         content: {
                             "application/json": {
                                 example: {
-                                    nombre: "Edgar Angulo",
+                                    nombre: "ximena lozada escobar",
                                     carrera: "Ing. de software"
                                 }
                             }
@@ -64,8 +64,8 @@ module.exports = {
                         content: {
                             "application/json": {
                                 example: {
-                                    anionacimiento: 2007,
-                                    edad: 19
+                                    anionacimiento: 2006,
+                                    edad: 20
                                 }
                             }
                         }

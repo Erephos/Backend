@@ -11,7 +11,7 @@ app.get("/api/saludo", (req, res) => {
 
 //Primer ejercicio
 app.get("/api/yo", (req, res) => {
-  res.json({nombre: "Edgar Angulo", carrera: "Ing. de software"})
+  res.json({nombre: "ximena lozada escobar", carrera: "Ing. de software"})
 })
 
 //Segundo ejercicio

@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model cliente {
+  id Int @id @default(autoincrement())
+  nombre String
+  fecha DateTime
+  createdAt DateTime
+}
+
+model Rol {
+  id       BigInt    @id @default(autoincrement()) @db.BigInt
+  nombre   String    @unique @db.VarChar(30)
+  usuarios Usuario[]
+
+  @@map("roles")
+}
+
+model Usuario {
+  id      BigInt @id @default(autoincrement()) @db.BigInt
+  rolId   BigInt @map("rol_id") @db.BigInt
+
+  rol             Rol    @relation(fields: [rolId], references: [id], onDelete: Restrict)
+  pagosRegistrados Pago[] @relation("PagosRegistrados")
+  pagosAnulados    Pago[] @relation("PagosAnulados")
+
+  @@map("usuarios")
+}
+
+model Socio {
+  id         BigInt      @id @default(autoincrement()) @db.BigInt
+  pagos      Pago[]
+  membresias Membresia[]
+
+  @@map("socios")
+}
+
+enum MetodoPago {
+  EFECTIVO
+  TARJETA
+  TRANSFERENCIA
+  OTRO
+}
+
+enum EstadoPago {
+  REGISTRADO
+  ANULADO
+}
+
+model Plan {
+  id           BigInt      @id @default(autoincrement()) @db.BigInt
+  nombre       String      @unique @db.VarChar(30)
+  precio       Decimal     @db.Decimal(10, 2)
+  duracionDias Int         @map("duracion_dias") @db.Integer
+  activo       Boolean     @default(true)
+
+  membresias   Membresia[]
+
+  @@map("planes")
+}
+model Pago {
+  id              BigInt     @id @default(autoincrement()) @db.BigInt
+  socioId         BigInt     @map("socio_id") @db.BigInt
+  membresiaId     BigInt     @map("membresia_id") @db.BigInt
+  monto           Decimal    @db.Decimal(10, 2)
+  metodo          MetodoPago
+  estado          EstadoPago @default(REGISTRADO)
+  fechaPago       DateTime   @default(now()) @map("fecha_pago") @db.Timestamptz()
+  registradoPorId BigInt     @map("registrado_por") @db.BigInt
+  anuladoPorId    BigInt?    @map("anulado_por") @db.BigInt
+  anuladoEn       DateTime?  @map("anulado_en") @db.Timestamptz()
+  motivoAnulacion String?    @map("motivo_anulacion") @db.VarChar(200)
+
+  socio           Socio      @relation(fields: [socioId], references: [id], onDelete: Restrict)
+  membresia       Membresia  @relation(fields: [membresiaId], references: [id], onDelete: Restrict)
+  registradoPor   Usuario    @relation("PagosRegistrados", fields: [registradoPorId], references: [id], onDelete: Restrict)
+  anuladoPor      Usuario?   @relation("PagosAnulados", fields: [anuladoPorId], references: [id], onDelete: Restrict)
+
+  @@map("pagos")
+}
+model Membresia {
+  id           BigInt   @id @default(autoincrement()) @db.BigInt
+  socioId      BigInt   @map("socio_id") @db.BigInt
+  planId       BigInt   @map("plan_id") @db.BigInt
+  fechaInicio  DateTime @map("fecha_inicio") @db.Date
+  fechaFin     DateTime @map("fecha_fin") @db.Date
+  precioPagado Decimal  @map("precio_pagado") @db.Decimal(10, 2)
+  creadaEn     DateTime @default(now()) @map("creada_en") @db.Timestamptz()
+
+  socio        Socio    @relation(fields: [socioId], references: [id], onDelete: Restrict)
+  plan         Plan     @relation(fields: [planId], references: [id], onDelete: Restrict)
+  pagos        Pago[]
+
+  @@index([socioId, fechaFin], name: "idx_membresias_socio_fin")
+  @@map("membresias")
+}
